@@ -11,7 +11,7 @@ This project is a Next.js web application that demonstrates efficient API integr
 Clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/jehadhl/test-app
+git clone https://github.com/jehadhl/test_dynamic_form.git
 cd test-app
 ```
 
