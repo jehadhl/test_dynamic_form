@@ -4,7 +4,8 @@ import { Input } from "../ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { formSchema } from "@/lib/validation"; // Assuming a single formSchema
+import { formSchema } from "@/lib/validation";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import {
   Form,
   FormControl,
@@ -116,6 +117,8 @@ const DynamicForm = ({ formData }) => {
     setFieldInteractions({});
   };
 
+  //   console.log(mutation.status);
+
   return (
     <Card className="w-[450px] mt-8">
       <CardHeader>
@@ -202,9 +205,15 @@ const DynamicForm = ({ formData }) => {
               <Button variant={"outline"} type="button" onClick={handleReset}>
                 Reset
               </Button>
-              <Button type="submit">
-                {" "}
-                {isSubmitting ? "Submitting..." : "Submit"}
+              <Button type="submit" disabled={mutation.isPending}>
+                {mutation.isPending ? (
+                  <>
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit"
+                )}
               </Button>
             </div>
           </form>
