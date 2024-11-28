@@ -1,9 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Input } from "../ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { formSchema } from "@/lib/validation";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import {
@@ -16,9 +14,6 @@ import {
 } from "../ui/form";
 import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
-import axiosInstance from "@/lib/axios";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import {
   Select,
@@ -27,97 +22,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useDynamicForm } from "@/hooks/useDynamicForm";
 
 const DynamicForm = ({ formData }) => {
-  const { toast } = useToast();
   const router = useRouter();
-
-  const [showPreferredContact, setShowPreferredContact] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [fieldInteractions, setFieldInteractions] = useState({});
-
-  // manage form state
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: formData.reduce(
-      (acc, field) => {
-        acc[field.name] = field.defaultValue || "";
-        return acc;
-      },
-      { contact_method: "" }
-    ),
-  });
-
-  const { watch, handleSubmit, reset, setValue } = form;
-
-  // handle show contact method
-  const ageValue = watch("age_12345");
-
-  useEffect(() => {
-    if (ageValue > 18) {
-      setShowPreferredContact(true);
-    } else {
-      setShowPreferredContact(false);
-
-      setValue("contact_method", "");
-    }
-  }, [ageValue, setValue]);
-
-  //
-  const mutation = useMutation({
-    mutationFn: async (data) => {
-      const response = await axiosInstance.post("/posts", data);
-      return response.data;
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Submission Successful",
-        description: `Post ID: ${data.id}`,
-        className: "bg-green-500 text-white",
-      });
-      router.push(`/posts/1`);
-      setIsSubmitting(false);
-    },
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Submission Failed",
-        description: error?.message,
-      });
-      setIsSubmitting(false);
-      reset();
-    },
-  });
-
-  const onSubmit = (data) => {
-    setIsSubmitting(true);
-    if (ageValue <= 18) {
-      delete data.contact_method;
-    }
-    // console.log(data)
-    mutation.mutate(data);
-  };
-
-  // track interaction
-  useEffect(() => {
-    const subscription = watch((values, { name }) => {
-      if (name) {
-        setFieldInteractions((prev) => ({
-          ...prev,
-          [name]: (prev[name] || 0) + 1,
-        }));
-      }
-    });
-
-    return () => subscription.unsubscribe?.();
-  }, [watch]);
-
-  const handleReset = () => {
-    reset();
-    setFieldInteractions({});
-  };
-
-  //   console.log(mutation.status);
+  const {
+    form,
+    fieldInteractions,
+    showPreferredContact,
+    handleSubmit,
+    handleReset,
+    onSubmit,
+    mutation,
+  } = useDynamicForm(formData, formSchema, router);
 
   return (
     <Card className="w-[450px] mt-8">
